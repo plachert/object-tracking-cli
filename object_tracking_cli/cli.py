@@ -2,6 +2,8 @@ import logging
 
 import click
 
+from .processing import process_video
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
