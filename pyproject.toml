@@ -8,11 +8,12 @@ license = "MIT"
 repository = "https://github.com/plachert/object-tracking-cli/"
 
 [tool.poetry.dependencies]
-python = "^3.9"
-click = "^8.1.7"
-opencv-python = "^4.9.0.80"
-ultralytics = "^8.2.1"
-seaborn = "^0.13.2"
+python = "3.9.18"
+click = "8.1.7"
+opencv-python = "4.9.0.80"
+ultralytics = "8.2.1"
+seaborn = "0.13.2"
+pre-commit = "3.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
