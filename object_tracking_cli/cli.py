@@ -1,7 +1,8 @@
 import logging
 
 import click
-from processing import process_video
+
+from . import processing
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
     required=True,
 )
 def cli(video_file):
-    process_video(video_file)
+    processing.process_video(video_file)
 
 
 if __name__ == "__main__":
