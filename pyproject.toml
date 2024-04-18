@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "object-tracking-cli"
+version = "0.1.1"
+description = "A simple CLI for naive object tracking"
+authors = ["plachert <pmlachert@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/plachert/object-tracking-cli/"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+click = "^8.1.7"
+opencv-python = "^4.9.0.80"
+ultralytics = "^8.2.1"
+seaborn = "^0.13.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+object_tracking = "object_tracking_cli.cli:cli"
