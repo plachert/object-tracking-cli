@@ -9,8 +9,8 @@ Problem można podzielić na 3 niezależne części:
 
 3. `(bounding box -> śledzony obiekt)` Tracking. Przez naiwny tracker rozumiem tracker, który nie wykorzystuje ani żadnej wewnętrznej reprezentacji ani ruchu. Zakładamy jedynie najprostszą rzecz - że obiekt w kolejnej ramce powinien być blisko ostatniej lokalizacji. Zdecydowałem się tutaj na wydzielenie abstrakcyjnej klasy, która zawiera wszystkie metody, które powinien mieć dowolny tracker. Naiwny tracker dziedziczy po tej klasie i implementuje metodę `update`. 
 Tracker może działać w dwóch trybach:
-- KD-tree: tutaj wykorzystuję fakt, że dopasowując centroidy trackera do centroidów nowych bounding boxów z reguły powinniśmy szukać wśród najbliższych. Idziemy więc po kolei po nowych bounding boxach i szukamy najbliższego zarejestrowanego centroidu. Mogą zdarzyć się jednak konflikty - wtedy szukamy kolejnego najbliższego, który nie był jeszcze przypisany. W rozsądnych przypadkach ten algorytm powinien działać szybciej, natomiast z minusów jest on wrażliwy na kolejność iteracji (jest w pewnym sensie zachłanny)
-- inspirowany https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ . Tutaj szukamy po macierzy odległości wszystkich zarejestrowanych centroidów ze wszystkimi centroidami bounding boxów. Mniej efektywny obliczeniowo, ale w trudnych przypadkach może działać lepiej
+    - KD-tree: tutaj wykorzystuję fakt, że dopasowując centroidy trackera do centroidów nowych bounding boxów z reguły powinniśmy szukać wśród najbliższych. Idziemy więc po kolei po nowych bounding boxach i szukamy najbliższego zarejestrowanego centroidu. Mogą zdarzyć się jednak konflikty - wtedy szukamy kolejnego najbliższego, który nie był jeszcze przypisany. W rozsądnych przypadkach ten algorytm powinien działać szybciej, natomiast z minusów jest on wrażliwy na kolejność iteracji (jest w pewnym sensie zachłanny)
+    - inspirowany https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ . Tutaj szukamy po macierzy odległości wszystkich zarejestrowanych centroidów ze wszystkimi centroidami bounding boxów. Mniej efektywny obliczeniowo, ale w trudnych przypadkach może działać lepiej
 
 ### Komentarz
 - naiwny tracker (w jednym czy drugim wariancie) dobrze może się sprawdzić w prostych przypadkach, ale nie będzie dobrze działał w przypadku gdy obiekty często się mijają. Również nie będzie dobrze działał w przypadku większych okluzji - nie śledzimy ruchu
@@ -27,7 +27,7 @@ Tracker może działać w dwóch trybach:
 
 ## Installation
 ```bash
-pip install .
+pip install -e .
 ```
 
 ## Test
