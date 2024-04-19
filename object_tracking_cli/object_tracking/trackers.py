@@ -58,6 +58,7 @@ class NaiveTracker(ObjectTracker):
 
     def _handle_assignments(self, bbox_centroids, object_ids, centroids):
         if self.use_kdtree:
+            # my approach based on KD-tree
             matches = find_unique_closest_pairs(
                 centroids, bbox_centroids
             )  # new point idx to centroid idx
