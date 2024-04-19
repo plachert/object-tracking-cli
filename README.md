@@ -17,7 +17,7 @@ Tracker może działać w dwóch trybach:
 
 - brakuje docstringów
 - nie zdążyłem też przetestować dokładnie trackera z algorytmenm opartym o KD-tree.
-- parametrem jest tylko ścieżka pliku i flaga sterująca algorytmem do trackingu (KD-tree czy zwykły)
+- parametrem jest tylko ścieżka pliku i flaga sterująca algorytmem do trackingu (KD-tree czy zwykły). Warto by dodać np. próg detekcji czy parametr kontrolujący NMS 
 - CLI jest w dwóch wariantach: 
     - parametry podajemy jako parametr (branch: main)
     - parametry podawane są jako wejście standardowe (branch: cli_std)

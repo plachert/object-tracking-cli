@@ -71,7 +71,7 @@ def plot_bboxes(frame, bboxes, class_to_color_and_name):
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
 
 
-def process_video(video_path: str, desired_fps: float = 30.0):
+def process_video(video_path: str, use_kdtree: bool = False, desired_fps: float = 30.0):
     # Setup video stream
     video_stream = VideoStream.from_file(video_path)
     video_stream.start()
@@ -80,7 +80,7 @@ def process_video(video_path: str, desired_fps: float = 30.0):
     object_detector = YOLODetector()
 
     # Setup Object Trackers
-    object_tracker = NaiveTracker()
+    object_tracker = NaiveTracker(use_kdtree=use_kdtree)
 
     # Setup class_to_color
     class_to_color = make_class_to_color_and_name(object_detector.class_id_to_name)

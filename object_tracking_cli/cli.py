@@ -19,5 +19,10 @@ logging.basicConfig(level=logging.INFO)
     ),
     required=True,
 )
-def cli(video_file):
-    process_video(video_file)
+@click.option(
+    "--use-kdtree",
+    is_flag=True,
+    help="Use KD-tree for tracking.",
+)
+def cli(video_file, use_kdtree):
+    process_video(video_file, use_kdtree)
