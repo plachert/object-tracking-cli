@@ -3,34 +3,10 @@ from collections import OrderedDict
 from typing import List
 
 import numpy as np
-from scipy.spatial import KDTree
 from scipy.spatial import distance as dist
 
 from ..object_detection.detection import Bbox_xyxy
-
-
-def find_closest_pairs_kdtree(centroids, points):
-    centroid_tree = KDTree(centroids)
-    closest_centroids_indices = centroid_tree.query(points)[1]
-    used_centroid_idxs = set()
-    closest_pairs = {}
-    for point_idx, centroid_idx in enumerate(closest_centroids_indices):
-        # resolve potential conflict
-        if centroid_idx in used_centroid_idxs:
-            k = 2
-            while k < len(centroids):
-                next_centroid_idx = centroid_tree.query(points[point_idx], k=k)[1][
-                    k - 1
-                ]
-                if next_centroid_idx not in used_centroid_idxs:
-                    closest_pairs[point_idx] = next_centroid_idx
-                    used_centroid_idxs.add(next_centroid_idx)
-                    break
-                k += 1
-        else:
-            closest_pairs[point_idx] = centroid_idx
-            used_centroid_idxs.add(centroid_idx)
-    return closest_pairs
+from .distance_utils import find_unique_closest_pairs
 
 
 class ObjectTracker(ABC):
@@ -82,7 +58,7 @@ class NaiveTracker(ObjectTracker):
 
     def _handle_assignments(self, bbox_centroids, object_ids, centroids):
         if self.use_kdtree:
-            matches = find_closest_pairs_kdtree(
+            matches = find_unique_closest_pairs(
                 centroids, bbox_centroids
             )  # new point idx to centroid idx
             used_centroids_idx = set()
