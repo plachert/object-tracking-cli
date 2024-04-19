@@ -15,7 +15,7 @@ Tracker może działać w dwóch trybach:
 ### Komentarz
 - naiwny tracker (w jednym czy drugim wariancie) dobrze może się sprawdzić w prostych przypadkach, ale nie będzie dobrze działał w przypadku gdy obiekty często się mijają. Również nie będzie dobrze działał w przypadku większych okluzji - nie śledzimy ruchu
 
-- brakuje dokumentacji
+- brakuje docstringów
 - nie zdążyłem też przetestować dokładnie trackera z algorytmenm opartym o KD-tree.
 - parametrem jest tylko ścieżka pliku i flaga sterująca algorytmem do trackingu (KD-tree czy zwykły)
 - CLI jest w dwóch wariantach: 
