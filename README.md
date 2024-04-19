@@ -23,6 +23,8 @@ Tracker może działać w dwóch trybach:
     - parametry podawane są jako wejście standardowe (branch: cli_std)
 - popracowałbym na pewno nad logowaniem
 
+- w przypadku przetwarzania filmu warto zrobić równoległe przetwarzanie w batchach i zapisać przetworzony film. Ze względu na ograniczony czas zdecydowałem się na przetwarzanie sekwencyjne.
+
 ## Installation
 ```bash
 pip install .
