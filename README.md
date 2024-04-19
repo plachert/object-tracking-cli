@@ -37,5 +37,5 @@ pytest .
 
 ## Usage
 ```bash
-object_tracking test_car.mp4
+object_tracking
 ```
