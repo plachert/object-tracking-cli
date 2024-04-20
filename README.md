@@ -31,13 +31,6 @@ trackers: # Trackers will be displayed side by side
       use_kdtree: true
       max_missing_frames: 3
 
-  - NaiveTracker:
-      use_kdtree: false
-      max_missing_frames: 3
-  
-  - NaiveTracker:
-      use_kdtree: true
-      max_missing_frames: 3
 ```
 ```bash
 object_tracking test_car.mp4 (--config)
