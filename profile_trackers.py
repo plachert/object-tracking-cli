@@ -6,7 +6,7 @@ def perfect_move(n_objects: int = 10):
     bboxes = [(0, 2*idx, 2, 2) for idx in range(n_objects)]
     while True:
         bboxes = [(bbox[0]+1, bbox[1], bbox[2]+1, bbox[3]) for bbox in bboxes]
-        yield tuple(bboxes)
+        yield bboxes
 
 
 if __name__ == "__main__":
