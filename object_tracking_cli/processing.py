@@ -67,8 +67,8 @@ def process_video(video_path: str, use_kdtree: bool = False, desired_fps: float 
 
     # Setup Object Trackers
     object_trackers = {
-        "tracker 1": NaiveTracker(use_kdtree=True), 
-        "tracker 2": NaiveTracker(use_kdtree=False),
+        "KD-tree": NaiveTracker(use_kdtree=True), 
+        "normal": NaiveTracker(use_kdtree=False),
     }
 
     # Setup class_to_color
