@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 @click.argument(
     "video_file",
     type=click.Path(
-        exists=False,
+        exists=True,
         file_okay=True,
         dir_okay=False,
         readable=True,
