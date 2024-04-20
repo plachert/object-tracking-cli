@@ -2,7 +2,6 @@ video:
   desired_fps: 30.
   output_width: 800
 
-
 detection:
   conf: 0.3
   iou: 0.7
