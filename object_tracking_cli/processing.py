@@ -82,9 +82,11 @@ def process_video(video_path: str, config):
     while True:
         start_time = wait_for_next_frame(desired_interval, start_time)
         frame = video_stream.get_last_frame()
-        frame = resize_with_aspect_ratio(frame, target_width=600)
         if frame is None:
             break
+        frame = resize_with_aspect_ratio(
+            frame, target_width=config["video"]["output_width"]
+        )
         processed_frame = process_frame(
             frame,
             detector=object_detector,

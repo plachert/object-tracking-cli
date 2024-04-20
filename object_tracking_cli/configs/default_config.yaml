@@ -1,5 +1,6 @@
 video:
   desired_fps: 30.
+  output_width: 800
 
 
 detection:
