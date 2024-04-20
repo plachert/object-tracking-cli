@@ -1,23 +1,23 @@
 import time
+from typing import Dict
 
 import cv2
 import seaborn as sns
 
 from .object_detection.detection import YOLODetector
-from .object_tracking.trackers import NaiveTracker, ObjectTracker
-from .video_streaming import VideoStream
-from typing import Dict
-
-from .utils.image_utils import resize_with_aspect_ratio
+from .object_tracking.base_tracker import ObjectTracker
+from .object_tracking.trackers import AVAILABLE_TRACKERS
 from .plotting import plot_bboxes, plot_tracking
+from .utils.image_utils import resize_with_aspect_ratio
+from .video_streaming import VideoStream
 
 
 def process_frame(
-        frame, 
-        detector: YOLODetector, 
-        trackers: Dict[str, ObjectTracker], 
-        class_to_color_and_name,
-        ):
+    frame,
+    detector: YOLODetector,
+    trackers: Dict[str, ObjectTracker],
+    class_to_color_and_name,
+):
     bboxes_with_class = detector.predict(frame)
     bboxes = [bbox[:-1] for bbox in bboxes_with_class]
     processed_frames = []
@@ -57,24 +57,27 @@ def make_class_to_color_and_name(class_id_to_name):
     }
 
 
-def process_video(video_path: str, use_kdtree: bool = False, desired_fps: float = 30.0):
+def process_video(video_path: str, config):
     # Setup video stream
     video_stream = VideoStream.from_file(video_path)
     video_stream.start()
 
     # Setup Object Detector
-    object_detector = YOLODetector()
+    object_detector = YOLODetector(**config["detection"])
 
     # Setup Object Trackers
-    object_trackers = {
-        "KD-tree": NaiveTracker(use_kdtree=True), 
-        "normal": NaiveTracker(use_kdtree=False),
-    }
+    object_trackers = {}
+    for tracker in config["trackers"]:
+        tracker_name, params = next(iter(tracker.items()))
+        name = f"{tracker_name} params: {params}"
+        object_trackers[name] = AVAILABLE_TRACKERS[tracker_name](**params)
 
     # Setup class_to_color
-    class_to_color_and_name = make_class_to_color_and_name(object_detector.class_id_to_name)
+    class_to_color_and_name = make_class_to_color_and_name(
+        object_detector.class_id_to_name
+    )
 
-    desired_interval = fps_to_interval(desired_fps)
+    desired_interval = fps_to_interval(config["video"]["desired_fps"])
     start_time = time.time()
     while True:
         start_time = wait_for_next_frame(desired_interval, start_time)
@@ -83,9 +86,9 @@ def process_video(video_path: str, use_kdtree: bool = False, desired_fps: float 
         if frame is None:
             break
         processed_frame = process_frame(
-            frame, 
-            detector=object_detector, 
-            trackers=object_trackers, 
+            frame,
+            detector=object_detector,
+            trackers=object_trackers,
             class_to_color_and_name=class_to_color_and_name,
         )
         cv2.imshow("Frame", processed_frame)

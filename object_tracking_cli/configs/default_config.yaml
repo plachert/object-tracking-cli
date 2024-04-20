@@ -1,0 +1,16 @@
+video:
+  desired_fps: 30.
+
+
+detection:
+  conf: 0.3
+  iou: 0.7
+
+trackers:
+  - NaiveTracker:
+      use_kdtree: false
+      max_missing_frames: 3
+  
+  - NaiveTracker:
+      use_kdtree: true
+      max_missing_frames: 3

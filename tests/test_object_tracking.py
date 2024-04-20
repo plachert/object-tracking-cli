@@ -1,22 +1,27 @@
+import random
+
 import pytest
+
 from object_tracking_cli.object_tracking.trackers import NaiveTracker
-import random 
 
 test_trackers = [
-    (NaiveTracker, {'use_kdtree': False}), 
-    (NaiveTracker, {'use_kdtree': True}),
-    ]
+    (NaiveTracker, {"use_kdtree": False}),
+    (NaiveTracker, {"use_kdtree": True}),
+]
 
 
 @pytest.fixture(scope="function")
 def perfect_move():
     n_objects = 10
+
     def gen_bboxes():
-        bboxes = [(0, 2*idx, 2, 2) for idx in range(n_objects)]
+        bboxes = [(0, 2 * idx, 2, 2) for idx in range(n_objects)]
         while True:
-            bboxes = [(bbox[0]+1, bbox[1], bbox[2]+1, bbox[3]) for bbox in bboxes]
+            bboxes = [(bbox[0] + 1, bbox[1], bbox[2] + 1, bbox[3]) for bbox in bboxes]
             yield tuple(bboxes)
+
     return gen_bboxes(), n_objects
+
 
 @pytest.fixture(scope="function", params=test_trackers)
 def tracker_with_params(request):

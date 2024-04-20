@@ -4,10 +4,18 @@ import numpy as np
 from scipy.spatial import distance as dist
 
 from ..object_detection.detection import Bbox_xyxy
-from .distance_utils import find_unique_closest_pairs
 from .base_tracker import ObjectTracker
+from .distance_utils import find_unique_closest_pairs
+
+AVAILABLE_TRACKERS = {}
 
 
+def register_tracker(cls):
+    AVAILABLE_TRACKERS[cls.__name__] = cls
+    return cls
+
+
+@register_tracker
 class NaiveTracker(ObjectTracker):
     def __init__(self, use_kdtree: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)

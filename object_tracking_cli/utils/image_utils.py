@@ -1,10 +1,13 @@
 import cv2
 
+
 def resize_with_aspect_ratio(image, target_width=None, target_height=None):
     height, width = image.shape[:2]
 
     if target_width is not None and target_height is not None:
-        raise ValueError("Only one of target_width or target_height should be provided.")
+        raise ValueError(
+            "Only one of target_width or target_height should be provided."
+        )
 
     if target_width is not None:
         ratio = target_width / width

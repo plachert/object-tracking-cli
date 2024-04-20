@@ -15,12 +15,13 @@ def plot_bboxes(frame, bboxes, class_to_color_and_name):
         )
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
 
+
 def plot_tracking(frame, tracker, tracker_name):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
     thickness = 2
     color = (0, 0, 255)
-    cv2.putText(frame, tracker_name, (10, 30), font, font_scale, color, thickness)
+    cv2.putText(frame, tracker_name, (10, 30), font, font_scale, (0, 0, 0), thickness)
     for object_id, (x, y) in tracker.objects.items():
         text = f"ID {object_id}"
         cv2.putText(
