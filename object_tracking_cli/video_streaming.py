@@ -27,7 +27,7 @@ class VideoStream:
         self.thread.start()
 
     def stop(self):
-        logger.info("Stopping gracefuly")
+        logger.info("Stopping gracefully")
         self.stopped = True
         self.thread.join()
 
