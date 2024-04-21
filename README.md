@@ -47,7 +47,7 @@ trackers:
 ### Profiling trackers
 Running on 500 objects (100 updates)
 
-![alt text](image.png)
+![](https://github.com/plachert/object-tracking-cli/blob/develop/examples/profiling.png)
 
 
 ## Comparing trackers
