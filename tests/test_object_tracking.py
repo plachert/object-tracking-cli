@@ -7,6 +7,7 @@ from object_tracking_cli.object_tracking.trackers import MotionAgnosticTracker
 test_trackers = [
     (MotionAgnosticTracker, {"assignment_strategy": "naive"}),
     (MotionAgnosticTracker, {"assignment_strategy": "kd_tree"}),
+    (MotionAgnosticTracker, {"assignment_strategy": "hungarian"}),
 ]
 
 

@@ -18,7 +18,10 @@ class ObjectTracker(ABC):
     def object_centroids(self):
         object_centroids = {}
         ids = self.objects.keys()
-        centroids = self._bboxes_to_centroids(self.objects.values())
+        try:
+            centroids = self._bboxes_to_centroids(self.objects.values())
+        except:
+            breakpoint()
         for id_, centroid in zip(ids, centroids):
             object_centroids[id_] = centroid
         return object_centroids

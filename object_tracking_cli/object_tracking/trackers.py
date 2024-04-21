@@ -2,6 +2,7 @@ import logging
 from typing import Literal
 
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance as dist
 
 from .base_tracker import ObjectTracker
@@ -27,6 +28,23 @@ class MotionAgnosticTracker(ObjectTracker):
         super().__init__(*args, **kwargs)
         self.assignment_strategy = assignment_strategy
 
+    def _post_assignment(self, matches, bboxes, object_ids, registered_bboxes):
+        used_registered_bbox_idx = set()
+        used_bboxes_idx = set()
+        for bbox_idx, registered_bbox_idx in matches.items():
+            self._objects[object_ids[registered_bbox_idx]] = bboxes[bbox_idx]
+            self._missing_frames[object_ids[registered_bbox_idx]] = 0
+            used_registered_bbox_idx.add(registered_bbox_idx)
+            used_bboxes_idx.add(bbox_idx)
+        unused_registered_bboxes_idx = (
+            set(range(len(registered_bboxes))) - used_registered_bbox_idx
+        )
+        unused_bboxes_idx = set(range(len(bboxes))) - used_bboxes_idx
+        for unused_registered_bbox_idx in unused_registered_bboxes_idx:
+            self.handle_missing(object_ids[unused_registered_bbox_idx])
+        for unused_bbox_idx in unused_bboxes_idx:
+            self.register_object(bboxes[unused_bbox_idx])
+
     def _naive_assignement(self, bboxes, object_ids, registered_bboxes):
         # https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ approach
         registered_centroids = self._bboxes_to_centroids(registered_bboxes)
@@ -34,34 +52,16 @@ class MotionAgnosticTracker(ObjectTracker):
         D = dist.cdist(np.array(registered_centroids), bbox_centroids)
         rows = D.min(axis=1).argsort()
         cols = D.argmin(axis=1)[rows]
-
         usedRows = set()
         usedCols = set()
-
+        matches = {}
         for row, col in zip(rows, cols):
             if row in usedRows or col in usedCols:
                 continue
-
-            objectID = object_ids[row]
-            self._objects[objectID] = bboxes[col]
-            self._missing_frames[objectID] = 0
-
+            matches[col] = row
             usedRows.add(row)
             usedCols.add(col)
-
-        unusedRows = set(range(0, D.shape[0])).difference(usedRows)
-        unusedCols = set(range(0, D.shape[1])).difference(usedCols)
-
-        if D.shape[0] >= D.shape[1]:
-            for row in unusedRows:
-                objectID = object_ids[row]
-                self._missing_frames[objectID] += 1
-
-                if self._missing_frames[objectID] > self._max_missing_frames:
-                    self.deregister_object(objectID)
-        else:
-            for col in unusedCols:
-                self.register_object(bboxes[col])
+        self._post_assignment(matches, bboxes, object_ids, registered_bboxes)
 
     def _kd_tree_assignment(self, bboxes, object_ids, registered_bboxes):
         registered_centroids = self._bboxes_to_centroids(registered_bboxes)
@@ -70,23 +70,35 @@ class MotionAgnosticTracker(ObjectTracker):
         matches = find_unique_closest_pairs(
             registered_centroids, bbox_centroids
         )  # new point idx to centroid idx
-        used_centroids_idx = set()
-        used_bboxes_centroids_idx = set()
-        for bbox_centroid_idx, centroid_idx in matches.items():
-            self._objects[object_ids[centroid_idx]] = bboxes[bbox_centroid_idx]
-            self._missing_frames[object_ids[centroid_idx]] = 0
-            used_centroids_idx.add(centroid_idx)
-            used_bboxes_centroids_idx.add(bbox_centroid_idx)
-        unused_centroids_idx = (
-            set(range(len(registered_centroids))) - used_centroids_idx
-        )
-        unused_bboxes_centroids_idx = (
-            set(range(len(bbox_centroids))) - used_bboxes_centroids_idx
-        )
-        for unused_centroid_idx in unused_centroids_idx:
-            self.handle_missing(object_ids[unused_centroid_idx])
-        for unused_bbox_centroid_idx in unused_bboxes_centroids_idx:
-            self.register_object(bbox_centroids[unused_bbox_centroid_idx])
+        self._post_assignment(matches, bboxes, object_ids, registered_bboxes)
+
+    def _hungarian_assignment(self, bboxes, object_ids, registered_bboxes):
+        def make_matrix_square(matrix, pad_value=0):
+            rows, cols = matrix.shape
+            max_dim = max(rows, cols)
+            pad_rows = max_dim - rows
+            pad_cols = max_dim - cols
+
+            if pad_rows > 0:
+                padding = np.full((pad_rows, cols), pad_value)
+                matrix = np.vstack((matrix, padding))
+
+            if pad_cols > 0:
+                padding = np.full((rows, pad_cols), pad_value)
+                matrix = np.hstack((matrix, padding))
+            return matrix
+
+        registered_centroids = self._bboxes_to_centroids(registered_bboxes)
+        bbox_centroids = self._bboxes_to_centroids(bboxes)
+        D = dist.cdist(np.array(registered_centroids), bbox_centroids)
+        D_square = make_matrix_square(D)
+        row_indices, col_indices = linear_sum_assignment(D_square)
+        org_rows, org_cols = D.shape
+        matches = {}
+        for row, col in zip(row_indices, col_indices):
+            if row < org_rows and col < org_cols:
+                matches[col] = row
+        self._post_assignment(matches, bboxes, object_ids, registered_bboxes)
 
     def _handle_assignments(self, bboxes, object_ids, registered_bboxes):
         if self.assignment_strategy == "kd_tree":
@@ -96,116 +108,4 @@ class MotionAgnosticTracker(ObjectTracker):
             self._naive_assignement(bboxes, object_ids, registered_bboxes)
 
         elif self.assignment_strategy == "hungarian":
-            raise NotImplementedError()
-
-
-# @register_tracker
-# class CentroidTracker(ObjectTracker):
-#     def __init__(
-#         self,
-#         assignment_strategy: Literal["naive", "kd_tree", "hangarian"] = "naive",
-#         *args,
-#         **kwargs,
-#     ):
-#         super().__init__(*args, **kwargs)
-#         self.assignment_strategy = assignment_strategy
-
-#     def update(self, bboxes: List[Bbox_xyxy_with_class_and_score], *args, **kwargs):
-#         bboxes = [bbox[:-2] for bbox in bboxes]
-#         # no new bounding boxes
-#         if len(bboxes) == 0:
-#             to_deregister = []
-#             for objectID in self._missing_frames.keys():
-#                 self._missing_frames[objectID] += 1
-#                 if self._missing_frames[objectID] > self._max_missing_frames:
-#                     to_deregister.append(objectID)
-#             for id_ in to_deregister:
-#                 self.deregister_object(id_)
-#             return self._objects
-
-#         # get centriods from bboxes
-#         bbox_centroids = self._bboxes_to_centroids(bboxes)
-
-#         # no registered objects. Register all new bboxes
-#         if len(self._objects) == 0:
-#             for i in range(0, len(bbox_centroids)):
-#                 self.register_object(bbox_centroids[i])
-
-#         else:
-#             object_ids = list(self._objects.keys())
-#             centroids = list(self._objects.values())
-#             self._handle_assignments(bbox_centroids, object_ids, centroids)
-#         return self._objects
-
-#     def _naive_assignement(self, bbox_centroids, object_ids, centroids):
-#         # https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ approach
-#         D = dist.cdist(np.array(centroids), bbox_centroids)
-#         rows = D.min(axis=1).argsort()
-#         cols = D.argmin(axis=1)[rows]
-
-#         usedRows = set()
-#         usedCols = set()
-
-#         for row, col in zip(rows, cols):
-#             if row in usedRows or col in usedCols:
-#                 continue
-
-#             objectID = object_ids[row]
-#             self._objects[objectID] = bbox_centroids[col]
-#             self._missing_frames[objectID] = 0
-
-#             usedRows.add(row)
-#             usedCols.add(col)
-
-#         unusedRows = set(range(0, D.shape[0])).difference(usedRows)
-#         unusedCols = set(range(0, D.shape[1])).difference(usedCols)
-
-#         if D.shape[0] >= D.shape[1]:
-#             for row in unusedRows:
-#                 objectID = object_ids[row]
-#                 self._missing_frames[objectID] += 1
-
-#                 if self._missing_frames[objectID] > self._max_missing_frames:
-#                     self.deregister_object(objectID)
-#         else:
-#             for col in unusedCols:
-#                 self.register_object(bbox_centroids[col])
-
-#     def _kd_tree_assignment(self, bbox_centroids, object_ids, centroids):
-#         # my approach based on KD-tree
-#         matches = find_unique_closest_pairs(
-#             centroids, bbox_centroids
-#         )  # new point idx to centroid idx
-#         used_centroids_idx = set()
-#         used_bboxes_centroids_idx = set()
-#         for bbox_centroid_idx, centroid_idx in matches.items():
-#             self._objects[object_ids[centroid_idx]] = bbox_centroids[bbox_centroid_idx]
-#             self._missing_frames[object_ids[centroid_idx]] = 0
-#             used_centroids_idx.add(centroid_idx)
-#             used_bboxes_centroids_idx.add(bbox_centroid_idx)
-#         unused_centroids_idx = set(range(len(centroids))) - used_centroids_idx
-#         unused_bboxes_centroids_idx = (
-#             set(range(len(bbox_centroids))) - used_bboxes_centroids_idx
-#         )
-#         for unused_centroid_idx in unused_centroids_idx:
-#             self.handle_missing(object_ids[unused_centroid_idx])
-#         for unused_bbox_centroid_idx in unused_bboxes_centroids_idx:
-#             self.register_object(bbox_centroids[unused_bbox_centroid_idx])
-
-#     def _handle_assignments(self, bbox_centroids, object_ids, centroids):
-#         if self.assignment_strategy == "kd_tree":
-#             self._kd_tree_assignment(bbox_centroids, object_ids, centroids)
-
-#         elif self.assignment_strategy == "naive":
-#             self._naive_assignement(bbox_centroids, object_ids, centroids)
-
-#         elif self.assignment_strategy == "hungarian":
-#             raise NotImplementedError()
-
-#     def _bboxes_to_centroids(self, bboxes: List[Bbox_xyxy]):
-#         centroids = np.zeros((len(bboxes), 2), dtype="int")
-#         for i, (x1, y1, x2, y2) in enumerate(bboxes):
-#             center_x = int((x1 + x2) / 2.0)
-#             center_y = int((y1 + y2) / 2.0)
-#             centroids[i] = (center_x, center_y)
-#         return centroids
+            self._hungarian_assignment(bboxes, object_ids, registered_bboxes)

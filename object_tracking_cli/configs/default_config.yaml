@@ -15,3 +15,7 @@ trackers:
       assignment_strategy: 'kd_tree'
       max_missing_frames: 3
 
+  - MotionAgnosticTracker:
+      assignment_strategy: 'hungarian'
+      max_missing_frames: 3
+

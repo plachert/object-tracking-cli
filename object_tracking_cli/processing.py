@@ -22,7 +22,7 @@ def process_frame(
     processed_frames = []
     for tracker_name, tracker in trackers.items():
         frame_copy = frame.copy()
-        tracker.update(bboxes=bboxes_with_class_and_score, frame=frame)
+        tracker.update(bboxes=bboxes_with_class_and_score)
         plot_bboxes(frame_copy, bboxes_with_class_and_score, class_to_color_and_name)
         plot_tracking(frame_copy, tracker, tracker_name)
         processed_frames.append(frame_copy)
