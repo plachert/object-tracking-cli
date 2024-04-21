@@ -14,3 +14,4 @@ trackers:
   - NaiveTracker:
       use_kdtree: true
       max_missing_frames: 3
+

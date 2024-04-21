@@ -18,13 +18,12 @@ def process_frame(
     trackers: Dict[str, ObjectTracker],
     class_to_color_and_name,
 ):
-    bboxes_with_class = detector.predict(frame)
-    bboxes = [bbox[:-1] for bbox in bboxes_with_class]
+    bboxes_with_class_and_score = detector.predict(frame)
     processed_frames = []
     for tracker_name, tracker in trackers.items():
         frame_copy = frame.copy()
-        tracker.update(bboxes)
-        plot_bboxes(frame_copy, bboxes_with_class, class_to_color_and_name)
+        tracker.update(bboxes=bboxes_with_class_and_score, frame=frame)
+        plot_bboxes(frame_copy, bboxes_with_class_and_score, class_to_color_and_name)
         plot_tracking(frame_copy, tracker, tracker_name)
         processed_frames.append(frame_copy)
     processed_frame = cv2.hconcat(processed_frames)

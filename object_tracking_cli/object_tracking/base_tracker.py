@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import List
 
-from ..object_detection.detection import Bbox_xyxy
+from ..object_detection.detection import Bbox_xyxy_with_class_and_score
 
 
 class ObjectTracker(ABC):
@@ -35,5 +35,7 @@ class ObjectTracker(ABC):
             self.deregister_object(object_id)
 
     @abstractmethod
-    def update(self, bboxes_xyxy: List[Bbox_xyxy]):  # noqa
+    def update(
+        self, bboxes: List[Bbox_xyxy_with_class_and_score], *args, **kwargs
+    ):  # noqa
         """Assign, register or deregister objects based on last detections."""

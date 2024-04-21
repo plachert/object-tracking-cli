@@ -1,8 +1,8 @@
 import cv2
 
 
-def plot_bboxes(frame, bboxes, class_to_color_and_name):
-    for x1, y1, x2, y2, class_ in bboxes:
+def plot_bboxes(frame, bboxes_with_class_and_score, class_to_color_and_name):
+    for x1, y1, x2, y2, class_, _ in bboxes_with_class_and_score:
         color, name = class_to_color_and_name[class_]
         cv2.putText(
             frame,

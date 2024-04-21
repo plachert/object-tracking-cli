@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 from scipy.spatial import distance as dist
 
-from ..object_detection.detection import Bbox_xyxy
+from ..object_detection.detection import Bbox_xyxy, Bbox_xyxy_with_class_and_score
 from .base_tracker import ObjectTracker
 from .distance_utils import find_unique_closest_pairs
 
@@ -86,7 +86,8 @@ class NaiveTracker(ObjectTracker):
                 for col in unusedCols:
                     self.register_object(bbox_centroids[col])
 
-    def update(self, bboxes):
+    def update(self, bboxes: List[Bbox_xyxy_with_class_and_score], *args, **kwargs):
+        bboxes = [bbox[:-2] for bbox in bboxes]
         # no new bounding boxes
         if len(bboxes) == 0:
             to_deregister = []
