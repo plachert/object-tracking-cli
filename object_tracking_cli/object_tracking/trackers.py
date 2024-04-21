@@ -6,6 +6,7 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance as dist
 
 from .base_tracker import ObjectTracker
+from .utils.costs import iou_cost
 from .utils.distance_utils import find_unique_closest_pairs
 
 logger = logging.getLogger(__name__)
@@ -22,11 +23,15 @@ class MotionAgnosticTracker(ObjectTracker):
     def __init__(
         self,
         assignment_strategy: Literal["naive", "kd_tree", "hangarian"] = "naive",
+        cost: Literal["euclidean", "iou"] = "euclidean",
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.assignment_strategy = assignment_strategy
+        self.cost = cost
+        if assignment_strategy == "kd_tree" and cost == "iou":
+            raise ValueError("Only euclidean cost works with KD-tree")
 
     def _post_assignment(self, matches, bboxes, object_ids, registered_bboxes):
         used_registered_bbox_idx = set()
@@ -45,13 +50,23 @@ class MotionAgnosticTracker(ObjectTracker):
         for unused_bbox_idx in unused_bboxes_idx:
             self.register_object(bboxes[unused_bbox_idx])
 
+    def _make_cost_matrix(self, bboxes, registered_bboxes):
+        if self.cost == "euclidean":
+            registered_centroids = self._bboxes_to_centroids(registered_bboxes)
+            bbox_centroids = self._bboxes_to_centroids(bboxes)
+            cost_matrix = dist.cdist(np.array(registered_centroids), bbox_centroids)
+        elif self.cost == "iou":
+            cost_matrix = np.zeros((len(registered_bboxes), len(bboxes)))
+            for i, bbox1 in enumerate(registered_bboxes):
+                for j, bbox2 in enumerate(bboxes):
+                    cost_matrix[i, j] = iou_cost(bbox1, bbox2)
+        return cost_matrix
+
     def _naive_assignement(self, bboxes, object_ids, registered_bboxes):
         # https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ approach
-        registered_centroids = self._bboxes_to_centroids(registered_bboxes)
-        bbox_centroids = self._bboxes_to_centroids(bboxes)
-        D = dist.cdist(np.array(registered_centroids), bbox_centroids)
-        rows = D.min(axis=1).argsort()
-        cols = D.argmin(axis=1)[rows]
+        cost_matrix = self._make_cost_matrix(bboxes, registered_bboxes)
+        rows = cost_matrix.min(axis=1).argsort()
+        cols = cost_matrix.argmin(axis=1)[rows]
         usedRows = set()
         usedCols = set()
         matches = {}
@@ -78,7 +93,6 @@ class MotionAgnosticTracker(ObjectTracker):
             max_dim = max(rows, cols)
             pad_rows = max_dim - rows
             pad_cols = max_dim - cols
-
             if pad_rows > 0:
                 padding = np.full((pad_rows, cols), pad_value)
                 matrix = np.vstack((matrix, padding))
@@ -88,12 +102,10 @@ class MotionAgnosticTracker(ObjectTracker):
                 matrix = np.hstack((matrix, padding))
             return matrix
 
-        registered_centroids = self._bboxes_to_centroids(registered_bboxes)
-        bbox_centroids = self._bboxes_to_centroids(bboxes)
-        D = dist.cdist(np.array(registered_centroids), bbox_centroids)
-        D_square = make_matrix_square(D)
-        row_indices, col_indices = linear_sum_assignment(D_square)
-        org_rows, org_cols = D.shape
+        cost_matrix = self._make_cost_matrix(bboxes, registered_bboxes)
+        cost_matrix_square = make_matrix_square(cost_matrix)
+        row_indices, col_indices = linear_sum_assignment(cost_matrix_square)
+        org_rows, org_cols = cost_matrix.shape
         matches = {}
         for row, col in zip(row_indices, col_indices):
             if row < org_rows and col < org_cols:

@@ -1,9 +1,4 @@
-from typing import List
-
-import numpy as np
 from scipy.spatial import KDTree
-
-from ...object_detection.detection import Bbox_xyxy_with_class_and_score
 
 
 def find_unique_closest_pairs(centroids, points):
@@ -28,14 +23,3 @@ def find_unique_closest_pairs(centroids, points):
             closest_pairs[point_idx] = centroid_idx
             used_centroid_idxs.add(centroid_idx)
     return closest_pairs
-
-
-def create_cost_matrix(
-    bboxes_1: List[Bbox_xyxy_with_class_and_score],
-    bboxes_2: List[Bbox_xyxy_with_class_and_score],
-    cost_function,
-) -> np.ndarray:
-    bboxes_1 = np.array(bboxes_1)
-    bboxes_2 = np.array(bboxes_2)
-    distance_matrix = cost_function(bboxes_1[:, None], bboxes_2)
-    return distance_matrix
