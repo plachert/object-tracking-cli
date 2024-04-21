@@ -7,11 +7,11 @@ detection:
   iou: 0.7
 
 trackers:
-  - NaiveTracker:
-      use_kdtree: false
+  - CentroidTracker:
+      assignment_strategy: 'naive'
       max_missing_frames: 3
   
-  - NaiveTracker:
-      use_kdtree: true
+  - CentroidTracker:
+      assignment_strategy: 'kd_tree'
       max_missing_frames: 3
 
