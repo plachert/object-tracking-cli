@@ -2,11 +2,11 @@ import random
 
 import pytest
 
-from object_tracking_cli.object_tracking.trackers import NaiveTracker
+from object_tracking_cli.object_tracking.trackers import MotionAgnosticTracker
 
 test_trackers = [
-    (NaiveTracker, {"use_kdtree": False}),
-    (NaiveTracker, {"use_kdtree": True}),
+    (MotionAgnosticTracker, {"assignment_strategy": "naive"}),
+    (MotionAgnosticTracker, {"assignment_strategy": "kd_tree"}),
 ]
 
 
@@ -15,9 +15,12 @@ def perfect_move():
     n_objects = 10
 
     def gen_bboxes():
-        bboxes = [(0, 2 * idx, 2, 2) for idx in range(n_objects)]
+        bboxes = [(0, 2 * idx, 2, 2, None, None) for idx in range(n_objects)]
         while True:
-            bboxes = [(bbox[0] + 1, bbox[1], bbox[2] + 1, bbox[3]) for bbox in bboxes]
+            bboxes = [
+                (bbox[0] + 1, bbox[1], bbox[2] + 1, bbox[3], None, None)
+                for bbox in bboxes
+            ]
             yield tuple(bboxes)
 
     return gen_bboxes(), n_objects
@@ -78,11 +81,11 @@ def test_perfect_assignment(perfect_move, tracker_with_params):
     tracker = tracker_class(**params)
     init_bboxes = next(gen_bboxes)
     tracker.update(init_bboxes)
-    initial_objects = tracker.objects
+    initial_centroids = tracker.object_centroids
     for _ in range(100):
         bboxes = next(gen_bboxes)
         tracker.update(bboxes)
-        updated_objects = tracker.objects
-        for object_id, centroid in updated_objects.items():
+        updated_objects_centroids = tracker.object_centroids
+        for object_id, centroid in updated_objects_centroids.items():
             _, y = centroid
-            assert y == initial_objects[object_id][1]
+            assert y == initial_centroids[object_id][1]

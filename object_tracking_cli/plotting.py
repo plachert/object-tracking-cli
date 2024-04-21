@@ -22,7 +22,7 @@ def plot_tracking(frame, tracker, tracker_name):
     thickness = 2
     color = (0, 0, 255)
     cv2.putText(frame, tracker_name, (10, 30), font, font_scale, (0, 0, 0), thickness)
-    for object_id, (x, y) in tracker.objects.items():
+    for object_id, (x, y) in tracker.object_centroids.items():
         text = f"ID {object_id}"
         cv2.putText(
             frame,
