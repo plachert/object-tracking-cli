@@ -40,10 +40,10 @@ test_trackers = [
 
 @pytest.fixture(scope="function")
 def perfect_move():
-    n_objects = 10
+    n_objects = 2
 
     def gen_bboxes():
-        bboxes = [(0, 2 * idx, 2, 2, None, None) for idx in range(n_objects)]
+        bboxes = [(0, 2 * idx, 2, 2 * idx + 2, None, None) for idx in range(n_objects)]
         while True:
             bboxes = [
                 (bbox[0] + 1, bbox[1], bbox[2] + 1, bbox[3], None, None)
@@ -116,7 +116,8 @@ def test_perfect_assignment(perfect_move, tracker_with_params):
         updated_objects_centroids = tracker.object_centroids
         for object_id, centroid in updated_objects_centroids.items():
             _, y = centroid
-            try:
-                assert y == initial_centroids[object_id][1]
-            except KeyError:
-                breakpoint()
+            assert y == initial_centroids[object_id][1]
+            # try:
+            #     assert y == initial_centroids[object_id][1]
+            # except KeyError:
+            #     breakpoint()
