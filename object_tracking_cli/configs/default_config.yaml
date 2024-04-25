@@ -7,7 +7,7 @@ detection:
   iou: 0.5
 
 trackers:
-  - Greedy IOU:
+  - Greedy Euclidean:
       max_missing_frames: 3
       cost_matrix_func:
         euclidean_cost_matrix:
