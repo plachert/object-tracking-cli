@@ -27,6 +27,7 @@ def euclidean_cost_matrix(
     registered_centroids = calc_centroids(registered_bboxes)
     bbox_centroids = calc_centroids(bboxes)
     cost_matrix = dist.cdist(np.array(registered_centroids), bbox_centroids)
+    cost_matrix /= np.max(cost_matrix)  # TODO: Normalize by frame diagonal
     return cost_matrix
 
 

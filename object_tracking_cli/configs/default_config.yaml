@@ -10,16 +10,17 @@ trackers:
   - Greedy IOU:
       max_missing_frames: 3
       cost_matrix_func:
-        iou_cost_matrix:
+        euclidean_cost_matrix:
       assignment_func:
         greedy_assignment: 
 
-  - Hungarian Euclidea:
+  - Hungarian IOU:
       max_missing_frames: 3
       cost_matrix_func:
-        euclidean_cost_matrix:
+        iou_cost_matrix:
       assignment_func:
         hungarian_assignment:
+          th: 0.9
         
 
 
