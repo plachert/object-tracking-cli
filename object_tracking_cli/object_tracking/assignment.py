@@ -15,7 +15,7 @@ def register_func(cls):
 
 
 @register_func
-def greedy_assignnment(cost_matrix) -> Assignment:
+def greedy_assignment(cost_matrix) -> Assignment:
     # https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ approach
     rows = cost_matrix.min(axis=1).argsort()
     cols = cost_matrix.argmin(axis=1)[rows]
