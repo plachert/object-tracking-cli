@@ -14,12 +14,12 @@ trackers:
       assignment_func:
         greedy_assignment: 
 
-  - Hungarian Euclidean:
+  - Hungarian Euclidea:
       max_missing_frames: 3
       cost_matrix_func:
         euclidean_cost_matrix:
       assignment_func:
-        greedy_assignment: 
+        hungarian_assignment:
         
 
 
