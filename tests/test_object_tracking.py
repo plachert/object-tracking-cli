@@ -117,7 +117,3 @@ def test_perfect_assignment(perfect_move, tracker_with_params):
         for object_id, centroid in updated_objects_centroids.items():
             _, y = centroid
             assert y == initial_centroids[object_id][1]
-            # try:
-            #     assert y == initial_centroids[object_id][1]
-            # except KeyError:
-            #     breakpoint()
