@@ -2,12 +2,39 @@ import random
 
 import pytest
 
-from object_tracking_cli.object_tracking.trackers import MotionAgnosticTracker
+from object_tracking_cli.object_tracking.assignment import (
+    greedy_assignment,
+    hungarian_assignment,
+)
+from object_tracking_cli.object_tracking.cost_matrix import (
+    euclidean_cost_matrix,
+    iou_cost_matrix,
+)
+from object_tracking_cli.object_tracking.mot import MultiObjectTracker
 
 test_trackers = [
-    (MotionAgnosticTracker, {"assignment_strategy": "naive"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "kd_tree"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "hungarian"}),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": greedy_assignment,
+            "cost_matrix_func": euclidean_cost_matrix,
+        },
+    ),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": hungarian_assignment,
+            "cost_matrix_func": euclidean_cost_matrix,
+        },
+    ),
+    (
+        MultiObjectTracker,
+        {"assignment_func": greedy_assignment, "cost_matrix_func": iou_cost_matrix},
+    ),
+    (
+        MultiObjectTracker,
+        {"assignment_func": hungarian_assignment, "cost_matrix_func": iou_cost_matrix},
+    ),
 ]
 
 
@@ -89,4 +116,7 @@ def test_perfect_assignment(perfect_move, tracker_with_params):
         updated_objects_centroids = tracker.object_centroids
         for object_id, centroid in updated_objects_centroids.items():
             _, y = centroid
-            assert y == initial_centroids[object_id][1]
+            try:
+                assert y == initial_centroids[object_id][1]
+            except KeyError:
+                breakpoint()
