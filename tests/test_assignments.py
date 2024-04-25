@@ -28,22 +28,22 @@ def test_greedy_on_global_problem(global_problem):
 
 
 def test_hungarian_on_nonglobal_problem(nonglobal_problem):
-    assignment = hungarian_assignment(nonglobal_problem)
+    assignment = hungarian_assignment(nonglobal_problem, th=100)
     assert assignment == {0: 0, 1: 1}
 
 
 def test_hungarian_on_global_problem(global_problem):
-    assignment = hungarian_assignment(global_problem)
+    assignment = hungarian_assignment(global_problem, th=100)
     assert assignment == {0: 0, 1: 1}
 
 
 def test_hungarian_on_missing_col():
     cost_matrix = np.array([[1, 2], [3, 4], [5, 6]])
     assignment = hungarian_assignment(cost_matrix)
-    assert assignment == {0: 0, 1: 1}
+    assert assignment == {0: 0}
 
 
 def test_hungarian_on_missing_row():
     cost_matrix = np.array([[1, 2, 3], [4, 5, 6]])
     assignment = hungarian_assignment(cost_matrix)
-    assert assignment == {0: 0, 1: 1}
+    assert assignment == {0: 0}
