@@ -8,7 +8,7 @@ import cv2
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_EXTENSIONS = [".mp4"]
+SUPPORTED_EXTENSIONS = [".mp4", ".webm"]
 
 
 class UnsupportedVideoFormat(Exception):

@@ -86,10 +86,10 @@ class MultiObjectTracker:
         # no new bounding boxes
         if len(bboxes) == 0:
             to_deregister = []
-            for objectID in self._missing_frames.keys():
-                self._missing_frames[objectID] += 1
-                if self._missing_frames[objectID] > self._max_missing_frames:
-                    to_deregister.append(objectID)
+            for object_id in self._missing_frames.keys():
+                self._missing_frames[object_id] += 1
+                if self._missing_frames[object_id] > self._max_missing_frames:
+                    to_deregister.append(object_id)
             for id_ in to_deregister:
                 self.deregister_object(id_)
             return self._objects
