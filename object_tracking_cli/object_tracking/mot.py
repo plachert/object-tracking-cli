@@ -109,8 +109,9 @@ class MultiObjectTracker:
         used_registered_bbox_idx = set()
         used_bboxes_idx = set()
         for bbox_idx, registered_bbox_idx in assignments.items():
-            self._objects[object_ids[registered_bbox_idx]] = bboxes[bbox_idx]
-            self._missing_frames[object_ids[registered_bbox_idx]] = 0
+            object_id = object_ids[registered_bbox_idx]
+            self._objects[object_id] = bboxes[bbox_idx]
+            self._missing_frames[object_id] = 0
             used_registered_bbox_idx.add(registered_bbox_idx)
             used_bboxes_idx.add(bbox_idx)
         unused_registered_bboxes_idx = (
