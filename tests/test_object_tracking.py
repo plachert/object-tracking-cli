@@ -40,7 +40,7 @@ test_trackers = [
 
 @pytest.fixture(scope="function")
 def perfect_move():
-    n_objects = 2
+    n_objects = 10
 
     def gen_bboxes():
         bboxes = [(0, 2 * idx, 2, 2 * idx + 2, None, None) for idx in range(n_objects)]
