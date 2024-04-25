@@ -38,6 +38,5 @@ def iou_cost_matrix(
     cost_matrix = np.zeros((len(registered_bboxes), len(bboxes)))
     for i, bbox1 in enumerate(registered_bboxes):
         for j, bbox2 in enumerate(bboxes):
-            print(bbox1, bbox2)
             cost_matrix[i, j] = 1.0 - iou(bbox1, bbox2)
     return cost_matrix

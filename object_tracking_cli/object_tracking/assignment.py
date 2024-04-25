@@ -17,7 +17,6 @@ def register_func(cls):
 @register_func
 def greedy_assignment(cost_matrix) -> Assignment:
     # https://pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/ approach
-    print(cost_matrix)
     rows = cost_matrix.min(axis=1).argsort()
     cols = cost_matrix.argmin(axis=1)[rows]
     used_rows = set()
@@ -29,7 +28,6 @@ def greedy_assignment(cost_matrix) -> Assignment:
         assignment[col] = row
         used_rows.add(row)
         used_cols.add(col)
-    print(assignment)
     return assignment
 
 
@@ -56,6 +54,4 @@ def hungarian_assignment(cost_matrix, th: float = 0.0) -> Assignment:
     for row, col in zip(row_indices, col_indices):
         if row < org_rows and col < org_cols:
             assignment[col] = row
-    print(cost_matrix)
-    print(assignment)
     return assignment
