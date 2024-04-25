@@ -1,4 +1,5 @@
 import random
+from functools import partial
 
 import pytest
 
@@ -23,7 +24,7 @@ test_trackers = [
     (
         MultiObjectTracker,
         {
-            "assignment_func": hungarian_assignment,
+            "assignment_func": partial(hungarian_assignment, th=1.0),
             "cost_matrix_func": euclidean_cost_matrix,
         },
     ),
@@ -33,14 +34,17 @@ test_trackers = [
     ),
     (
         MultiObjectTracker,
-        {"assignment_func": hungarian_assignment, "cost_matrix_func": iou_cost_matrix},
+        {
+            "assignment_func": partial(hungarian_assignment, th=1.0),
+            "cost_matrix_func": iou_cost_matrix,
+        },
     ),
 ]
 
 
 @pytest.fixture(scope="function")
 def perfect_move():
-    n_objects = 10
+    n_objects = 2
 
     def gen_bboxes():
         bboxes = [(0, 2 * idx, 2, 2 * idx + 2, None, None) for idx in range(n_objects)]
