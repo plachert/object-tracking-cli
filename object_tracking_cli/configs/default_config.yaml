@@ -10,10 +10,9 @@ trackers:
   - Tracker_1:
       max_missing_frames: 3
       cost_matrix_func:
-        euclidean_cost_matrix:
+        iou_cost_matrix:
       assignment_func:
-        hungarian_assignment:
-          th: 0
-
+        greedy_assignment: 
+        
 
 
