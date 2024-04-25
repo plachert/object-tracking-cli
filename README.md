@@ -19,57 +19,76 @@ object_tracking test_car.mp4 (--config path_to_custom_config)
 ### Default Config
 ```yaml
 video:
-  desired_fps: 30. # upper bound - needed when processing is too fast
-  output_width: 800 # resizing with fixed aspect ratio
+  desired_fps: 30
+  output_width: 800
 
 detection:
-  conf: 0.5 # confidence threshold 
-  iou: 0.5 # NMS
+  conf: 0.5
+  iou: 0.5
 
 trackers:
-  - MotionAgnosticTracker:
-      assignment_strategy: 'naive'
-      cost: 'euclidean'
+  - Greedy Euclidean:
       max_missing_frames: 3
-  
-  - MotionAgnosticTracker:
-      assignment_strategy: 'naive'
-      cost: 'iou'
+      cost_matrix_func:
+        euclidean_cost_matrix:
+      assignment_func:
+        greedy_assignment: 
+
+  - Hungarian IOU:
       max_missing_frames: 3
+      cost_matrix_func:
+        iou_cost_matrix:
+      assignment_func:
+        hungarian_assignment:
+          th: 0.9
 
 ```
-## Available trackers
-`MotionAgnosticTracker` - a simple tracker that doesn't incorporate motion. It assigns bounding boxes based on either `euclidean distance` or `IoU`. One can choose 3 matching algorithms:
-- `naive` - Begin by assigning the closest pairs and then proceed with the remaining pairs. However, this method does not guarantee a globally optimal solution.
-- `kd_tree` - Utilizes a KD-Tree to search for the closest pairs, making it generally faster than the naive approach, especially for scenarios involving many objects. However, it is sensitive to the order of centroids.
-- `hungarian` - Although slower compared to other methods, it offers a solution to the linear assignment problem, ensuring global optimization.
-
-### Profiling trackers
-Running on 500 objects (100 updates)
-
-![](https://github.com/plachert/object-tracking-cli/blob/develop/examples/profiling.png)
-
 
 ## Comparing trackers
 The trackers defined in the `yaml` config file will appear side by side:
 
 ![](https://github.com/plachert/object-tracking-cli/blob/develop/examples/compare.gif)
 
+## Development
+`MultiObjectTracker` is created in `Composition over inharitance` spirit. Developing tracking methods should be done by developing the components of MOT rather than subclassing. The components are:
+- cost_matrix_func: function that for 2 sets of bounding boxes creates a normalized cost function.
+- assignment_func: function that creates a matching between two sets of bounding boxes given their cost matrix
+- motion_model: To be implemented. 
 
-## Developing trackers
-1. Create a tracker that is a subclass of `ObjectTracker`
-2. Register the tracker using the decorator `register_tracker`
-3. Add tracker to the tests, e.g.:
+
+## Testing trackers
+
+1. Add tracker to `test_object_tracking.py`:
 ```python
 test_trackers = [
-    (MotionAgnosticTracker, {"assignment_strategy": "naive", "cost": "iou"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "naive", "cost": "euclidean"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "kd_tree"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "hungarian", "cost": "iou"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "hungarian", "cost": "euclidean"}),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": greedy_assignment,
+            "cost_matrix_func": euclidean_cost_matrix,
+        },
+    ),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": partial(hungarian_assignment, th=1.0),
+            "cost_matrix_func": euclidean_cost_matrix,
+        },
+    ),
+    (
+        MultiObjectTracker,
+        {"assignment_func": greedy_assignment, "cost_matrix_func": iou_cost_matrix},
+    ),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": partial(hungarian_assignment, th=1.0),
+            "cost_matrix_func": iou_cost_matrix,
+        },
+    ),
 ]
 ```
-4. Run tests: `pytest .`
+2. Run tests: `pytest .`
 
 
 
