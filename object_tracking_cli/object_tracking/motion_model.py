@@ -31,11 +31,11 @@ class MotionModel(ABC):
 @register_model
 class MotionAgnosticModel(MotionModel):
     def __init__(self, bbox: Bbox_xyxy_with_class_and_score) -> None:
-        self.bbox = bbox
+        self._bbox = bbox
 
     @property
     def bbox(self):
-        return self.bbox
+        return self._bbox
 
     def predict_bbox(self):
         return self.bbox
@@ -55,12 +55,12 @@ class KFCentroidVelocityModel(MotionModel):
         kf.P *= 1000
         kf.R *= 10
         self.kf = kf
-        self.bbox = bbox
-        self.centroid = centroid
+        self._bbox = bbox
+        self._centroid = centroid
 
     @property
     def bbox(self):
-        return self.bbox
+        return self._bbox
 
     def predict_bbox(self):
         """Update state based on the velocity model and return the updated bbox."""
@@ -85,5 +85,5 @@ class KFCentroidVelocityModel(MotionModel):
         y1 = new_centroid[1] - (bbox_height // 2)
         x2 = new_centroid[0] + (bbox_width // 2)
         y2 = new_centroid[1] + (bbox_height // 2)
-        self.bbox = (x1, y1, x2, y2, score, class_)
-        self.centroid = new_centroid
+        self._bbox = (x1, y1, x2, y2, score, class_)
+        self._centroid = new_centroid
