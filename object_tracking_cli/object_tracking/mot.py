@@ -13,6 +13,7 @@ from .cost_matrix import (
     CostMatrixFunction,
     euclidean_cost_matrix,
 )
+from .motion_model import AVAILABLE_MOTION_MODELS, MotionAgnosticModel, MotionModel
 from .utils.bbox import calc_centroids
 
 
@@ -21,11 +22,13 @@ class MultiObjectTracker:
         self,
         assignment_func: AssignmentFunction = hungarian_assignment,
         cost_matrix_func: CostMatrixFunction = euclidean_cost_matrix,
+        motion_model_cls: MotionModel = MotionAgnosticModel,
         max_missing_frames: int = 3,
     ):
         self._max_missing_frames = max_missing_frames
         self.assignment_func = assignment_func
         self.cost_matrix_func = cost_matrix_func
+        self.motion_model_cls = motion_model_cls
         self._objects = OrderedDict()
         self._missing_frames = OrderedDict()
         self._next_object_id = 0
@@ -38,16 +41,20 @@ class MultiObjectTracker:
         assignment_params = {} if assignment_params is None else assignment_params
         cost_type, cost_params = next(iter(config["cost_matrix_func"].items()))
         cost_params = {} if cost_params is None else cost_params
+        model_type, model_params = next(iter(config["motion_model_cls"].items()))
+        model_params = {} if model_params is None else model_params
         assignment_func = partial(
             AVAILABLE_ASSIGNMENT_FUNCS[assignment_type], **assignment_params
         )
         cost_matrix_func = partial(
             AVAILABLE_COST_MATRIX_FUNCS[cost_type], **cost_params
         )
+        motion_model_cls = partial(AVAILABLE_MOTION_MODELS[model_type], **model_params)
 
         return cls(
             assignment_func=assignment_func,
             cost_matrix_func=cost_matrix_func,
+            motion_model_cls=motion_model_cls,
             max_missing_frames=config["max_missing_frames"],
         )
 

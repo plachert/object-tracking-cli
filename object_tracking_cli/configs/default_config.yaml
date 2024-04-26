@@ -13,6 +13,8 @@ trackers:
         euclidean_cost_matrix:
       assignment_func:
         greedy_assignment: 
+      motion_model_cls:
+        MotionAgnosticModel:
 
   - Hungarian IOU:
       max_missing_frames: 3
@@ -21,6 +23,8 @@ trackers:
       assignment_func:
         hungarian_assignment:
           th: 0.9
+      motion_model_cls:
+        MotionAgnosticModel:
         
 
 
