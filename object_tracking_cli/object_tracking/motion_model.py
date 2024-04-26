@@ -1,11 +1,31 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
 from filterpy.kalman import KalmanFilter
 
 from ..object_detection.detection import Bbox_xyxy_with_class_and_score
 from .utils.bbox import calc_centroids
 
+AVAILABLE_MOTION_MODELS = {}
 
-class MotionAgnosticModel:
+
+def register_model(cls):
+    AVAILABLE_MOTION_MODELS[cls.__name__] = cls
+    return cls
+
+
+class MotionModel(ABC):
+    @abstractmethod
+    def predict_bbox(self) -> Bbox_xyxy_with_class_and_score:
+        """Update state based on the velocity model and return the updated bbox."""
+
+    @abstractmethod
+    def update_bbox(self) -> Bbox_xyxy_with_class_and_score:
+        """Refine the estimate based on the measurement and return the refined bbox."""
+
+
+@register_model
+class MotionAgnosticModel(MotionModel):
     def __init__(self, bbox: Bbox_xyxy_with_class_and_score) -> None:
         self.bbox = bbox
 
@@ -16,7 +36,8 @@ class MotionAgnosticModel:
         return measurement
 
 
-class KFCentroidVelocityModel:
+@register_model
+class KFCentroidVelocityModel(MotionModel):
     def __init__(self, bbox: Bbox_xyxy_with_class_and_score) -> None:
         kf = KalmanFilter(dim_x=4, dim_z=2)
         centroid = calc_centroids([bbox])[0]
