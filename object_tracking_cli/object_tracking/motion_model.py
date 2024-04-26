@@ -41,7 +41,8 @@ class MotionAgnosticModel(MotionModel):
         return self.bbox
 
     def update_bbox(self, measurement: Bbox_xyxy_with_class_and_score):
-        return measurement
+        self._bbox = measurement
+        return self.bbox
 
 
 @register_model

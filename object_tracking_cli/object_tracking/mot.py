@@ -62,7 +62,7 @@ class MultiObjectTracker:
     def object_centroids(self):
         object_centroids = {}
         ids = self.objects.keys()
-        centroids = calc_centroids(self.objects.values())
+        centroids = calc_centroids([obj.bbox for obj in self.objects.values()])
         for id_, centroid in zip(ids, centroids):
             object_centroids[id_] = centroid
         return object_centroids
@@ -76,7 +76,7 @@ class MultiObjectTracker:
         return len(self._objects)
 
     def register_object(self, object_):
-        self._objects[self._next_object_id] = object_
+        self._objects[self._next_object_id] = self.motion_model_cls(object_)
         self._missing_frames[self._next_object_id] = 0
         self._next_object_id += 1
 
@@ -90,6 +90,10 @@ class MultiObjectTracker:
             self.deregister_object(object_id)
 
     def update(self, bboxes: List[Bbox_xyxy_with_class_and_score]):
+        # update motion
+        for _, obj in self._objects.items():
+            obj.predict_bbox()
+
         # no new bounding boxes
         if len(bboxes) == 0:
             to_deregister = []
@@ -108,7 +112,7 @@ class MultiObjectTracker:
 
         else:
             object_ids = list(self._objects.keys())
-            registerd_bboxes = list(self._objects.values())
+            registerd_bboxes = list([obj.bbox for obj in self._objects.values()])
             self._handle_assignments(bboxes, object_ids, registerd_bboxes)
         return self._objects
 
@@ -117,7 +121,7 @@ class MultiObjectTracker:
         used_bboxes_idx = set()
         for bbox_idx, registered_bbox_idx in assignments.items():
             object_id = object_ids[registered_bbox_idx]
-            self._objects[object_id] = bboxes[bbox_idx]
+            self._objects[object_id].update_bbox(bboxes[bbox_idx])
             self._missing_frames[object_id] = 0
             used_registered_bbox_idx.add(registered_bbox_idx)
             used_bboxes_idx.add(bbox_idx)
