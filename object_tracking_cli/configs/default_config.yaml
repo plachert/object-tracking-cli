@@ -7,14 +7,25 @@ detection:
   iou: 0.5
 
 trackers:
-  - MotionAgnosticTracker:
-      assignment_strategy: 'naive'
-      cost: 'euclidean'
-      max_missing_frames: 3
-  
-  - MotionAgnosticTracker:
-      assignment_strategy: 'naive'
-      cost: 'iou'
-      max_missing_frames: 3
+  - Motion Agnostic:
+      max_missing_frames: 10
+      cost_matrix_func:
+        iou_cost_matrix:
+      assignment_func:
+        hungarian_assignment:
+          th: 0.9
+      motion_model_cls:
+        MotionAgnosticModel:
+
+  - KFCentroidVelocityModel:
+      max_missing_frames: 10
+      cost_matrix_func:
+        iou_cost_matrix:
+      assignment_func:
+        hungarian_assignment:
+          th: 0.9
+      motion_model_cls:
+        KFCentroidVelocityModel:
+        
 
 

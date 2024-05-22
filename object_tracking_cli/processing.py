@@ -5,8 +5,7 @@ import cv2
 import seaborn as sns
 
 from .object_detection.detection import YOLODetector
-from .object_tracking.base_tracker import ObjectTracker
-from .object_tracking.trackers import AVAILABLE_TRACKERS
+from .object_tracking.mot import MultiObjectTracker
 from .plotting import plot_bboxes, plot_tracking
 from .utils.image_utils import resize_with_aspect_ratio
 from .video_streaming import VideoStream
@@ -15,7 +14,7 @@ from .video_streaming import VideoStream
 def process_frame(
     frame,
     detector: YOLODetector,
-    trackers: Dict[str, ObjectTracker],
+    trackers: Dict[str, MultiObjectTracker],
     class_to_color_and_name,
 ):
     bboxes_with_class_and_score = detector.predict(frame)
@@ -69,7 +68,7 @@ def process_video(video_path: str, config):
     for tracker in config["trackers"]:
         tracker_name, params = next(iter(tracker.items()))
         name = f"{tracker_name} params: {params}"
-        object_trackers[name] = AVAILABLE_TRACKERS[tracker_name](**params)
+        object_trackers[name] = MultiObjectTracker.from_config(params)
 
     # Setup class_to_color
     class_to_color_and_name = make_class_to_color_and_name(

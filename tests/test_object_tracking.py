@@ -1,22 +1,53 @@
 import random
+from functools import partial
 
 import pytest
 
-from object_tracking_cli.object_tracking.trackers import MotionAgnosticTracker
+from object_tracking_cli.object_tracking.assignment import (
+    greedy_assignment,
+    hungarian_assignment,
+)
+from object_tracking_cli.object_tracking.cost_matrix import (
+    euclidean_cost_matrix,
+    iou_cost_matrix,
+)
+from object_tracking_cli.object_tracking.mot import MultiObjectTracker
 
 test_trackers = [
-    (MotionAgnosticTracker, {"assignment_strategy": "naive"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "kd_tree"}),
-    (MotionAgnosticTracker, {"assignment_strategy": "hungarian"}),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": greedy_assignment,
+            "cost_matrix_func": euclidean_cost_matrix,
+        },
+    ),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": partial(hungarian_assignment, th=1.0),
+            "cost_matrix_func": euclidean_cost_matrix,
+        },
+    ),
+    (
+        MultiObjectTracker,
+        {"assignment_func": greedy_assignment, "cost_matrix_func": iou_cost_matrix},
+    ),
+    (
+        MultiObjectTracker,
+        {
+            "assignment_func": partial(hungarian_assignment, th=1.0),
+            "cost_matrix_func": iou_cost_matrix,
+        },
+    ),
 ]
 
 
 @pytest.fixture(scope="function")
 def perfect_move():
-    n_objects = 10
+    n_objects = 2
 
     def gen_bboxes():
-        bboxes = [(0, 2 * idx, 2, 2, None, None) for idx in range(n_objects)]
+        bboxes = [(0, 2 * idx, 2, 2 * idx + 2, None, None) for idx in range(n_objects)]
         while True:
             bboxes = [
                 (bbox[0] + 1, bbox[1], bbox[2] + 1, bbox[3], None, None)
