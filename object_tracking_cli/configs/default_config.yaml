@@ -26,6 +26,6 @@ trackers:
           th: 0.9
       motion_model_cls:
         KFCentroidVelocityModel:
-        
+  
 
 
