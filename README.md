@@ -27,20 +27,25 @@ detection:
   iou: 0.5
 
 trackers:
-  - Greedy Euclidean:
-      max_missing_frames: 3
-      cost_matrix_func:
-        euclidean_cost_matrix:
-      assignment_func:
-        greedy_assignment: 
-
-  - Hungarian IOU:
-      max_missing_frames: 3
+  - Motion Agnostic:
+      max_missing_frames: 10
       cost_matrix_func:
         iou_cost_matrix:
       assignment_func:
         hungarian_assignment:
           th: 0.9
+      motion_model_cls:
+        MotionAgnosticModel:
+
+  - KFCentroidVelocityModel:
+      max_missing_frames: 10
+      cost_matrix_func:
+        iou_cost_matrix:
+      assignment_func:
+        hungarian_assignment:
+          th: 0.9
+      motion_model_cls:
+        KFCentroidVelocityModel:
 
 ```
 
